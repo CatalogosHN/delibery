@@ -88,24 +88,24 @@ h1{
   isolation:isolate;
 }
 
-/*
-  Usamos <video> directo desde Drive, no iframe preview.
-  Así no aparecen los controles gigantes de Google Drive encima del video.
-*/
 .video{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
+  border:0;
   display:block;
   background:#000;
-  object-fit:contain;
   opacity:1 !important;
   filter:none !important;
-  border:0;
 }
 
+/*
+  Ventana emergente grande por 2 segundos.
+*/
 .flashPopup{
   position:absolute;
-  z-index:9;
+  z-index:20;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
@@ -114,10 +114,10 @@ h1{
   border-radius:22px;
   text-align:center;
   background:
-    radial-gradient(circle at 10% 0%,rgba(255,255,255,.98),rgba(255,255,255,.76)),
-    linear-gradient(135deg,#fff200 0%,#ff7a00 35%,#ff006e 65%,#006bff 100%);
+    radial-gradient(circle at 10% 0%,rgba(255,255,255,.98),rgba(255,255,255,.78)),
+    linear-gradient(135deg,#fff200 0%,#ff7a00 35%,#ff006e 66%,#006bff 100%);
   border:3px solid #fff;
-  box-shadow:0 18px 50px rgba(0,0,0,.38);
+  box-shadow:0 18px 50px rgba(0,0,0,.42);
   pointer-events:none;
   animation:popupBeat .62s ease-in-out infinite alternate;
 }
@@ -130,7 +130,7 @@ h1{
   letter-spacing:-.04em;
   font-weight:1000;
   text-transform:uppercase;
-  text-shadow:0 2px 0 rgba(255,255,255,.85);
+  text-shadow:0 2px 0 rgba(255,255,255,.86);
 }
 
 .flashPopup span{
@@ -163,76 +163,81 @@ h1{
   }
 }
 
-.bigPlay{
+/*
+  Mensaje superior simple.
+  No bloquea el video.
+*/
+.playHint{
   position:absolute;
-  z-index:7;
+  top:10px;
   left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:88px;
-  height:88px;
+  transform:translateX(-50%);
+  z-index:12;
+  padding:8px 12px;
   border-radius:999px;
-  border:0;
-  background:rgba(255,255,255,.94);
-  color:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:42px;
-  line-height:1;
-  cursor:pointer;
-  box-shadow:0 14px 35px rgba(0,0,0,.30);
-  -webkit-tap-highlight-color:transparent;
+  background:rgba(255,255,255,.93);
+  color:#111827;
+  font-size:13px;
+  font-weight:bold;
+  box-shadow:0 8px 18px rgba(0,0,0,.14);
+  pointer-events:none;
+  white-space:nowrap;
 }
 
-.bigPlay span{
-  transform:translateX(4px);
+.playHint.hide{
+  opacity:0;
+  transition:opacity .25s ease;
 }
 
-.bigPlay:active{
-  transform:translate(-50%,-50%) scale(.96);
-}
-
-.touchLayer{
+/*
+  Este escudo transparente aparece después del primer toque al video.
+  La idea es dejar que los controles de Drive se escondan solos y evitar
+  que el usuario vuelva a tocar accidentalmente y los saque otra vez.
+*/
+.cleanShield{
   position:absolute;
   inset:0;
-  z-index:5;
+  z-index:11;
   background:transparent;
+  display:none;
   border:0;
-  margin:0;
   padding:0;
+  margin:0;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
 
-.touchLayer:focus{
-  outline:none;
-}
-
-.progress{
-  position:absolute;
-  z-index:8;
-  left:0;
-  right:0;
-  top:0;
-  height:5px;
-  background:rgba(255,255,255,.22);
-  pointer-events:none;
-}
-
-.progress span{
+.cleanShield.active{
   display:block;
-  width:0%;
-  height:100%;
-  background:#fff;
-  transition:width .2s linear;
+}
+
+.miniToast{
+  position:absolute;
+  z-index:13;
+  left:50%;
+  bottom:48px;
+  transform:translateX(-50%);
+  padding:8px 11px;
+  border-radius:999px;
+  background:rgba(0,0,0,.72);
+  color:#fff;
+  font-size:12px;
+  font-weight:bold;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease;
+  white-space:nowrap;
+}
+
+.miniToast.show{
+  opacity:1;
 }
 
 .watermark{
   position:absolute;
   left:10px;
   bottom:10px;
-  z-index:8;
+  z-index:12;
   max-width:calc(100% - 20px);
   padding:7px 10px;
   border-radius:999px;
@@ -246,55 +251,6 @@ h1{
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-}
-
-.status{
-  position:absolute;
-  z-index:8;
-  left:50%;
-  bottom:48px;
-  transform:translateX(-50%);
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(0,0,0,.68);
-  color:#fff;
-  font-size:12px;
-  font-weight:bold;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity .2s ease;
-  white-space:nowrap;
-}
-
-.status.show{
-  opacity:1;
-}
-
-.loadingMsg,
-.errorMsg{
-  position:absolute;
-  inset:0;
-  z-index:6;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:18px;
-  color:#fff;
-  background:rgba(0,0,0,.70);
-  font-size:15px;
-  line-height:1.35;
-  font-weight:bold;
-}
-
-.errorMsg{
-  display:none;
-  z-index:10;
-}
-
-.errorMsg a{
-  color:#fff;
-  text-decoration:underline;
 }
 
 .btn{
@@ -338,9 +294,8 @@ h1{
 }
 
 /*
-  IMPORTANTE:
-  Quité el botón flotante verde porque en móvil se montaba encima del contenido
-  y hacía que todo se viera más cargado.
+  El botón flotante verde fue eliminado porque en móvil estorbaba
+  y tapaba contenido. Se deja solo el botón azul principal.
 */
 
 @media (max-width:520px){
@@ -362,18 +317,12 @@ h1{
   }
 
   /*
-    En móvil el video queda vertical y grande.
-    object-fit:contain evita recorte del video.
+    Móvil vertical grande.
+    Se mantiene el iframe de Drive porque es el que sí carga.
   */
   .videoBox{
     aspect-ratio:9/16;
     max-height:76vh;
-  }
-
-  .bigPlay{
-    width:78px;
-    height:78px;
-    font-size:38px;
   }
 
   .flashPopup{
@@ -382,13 +331,20 @@ h1{
     border-radius:20px;
   }
 
+  .playHint{
+    top:9px;
+    max-width:90%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
   .watermark{
     left:8px;
     bottom:8px;
     font-size:11px;
   }
 
-  .status{
+  .miniToast{
     bottom:43px;
   }
 }
@@ -420,47 +376,26 @@ h1{
     </div>
 
     <div class="videoBox" id="videoBox">
-      <div class="progress" aria-hidden="true">
-        <span id="progressBar"></span>
-      </div>
-
       <div class="flashPopup" id="flashPopup" aria-hidden="true">
         <strong>DALE REPRODUCIR AL VIDEO PARA VER LA DIRECCIÓN</strong>
         <span>TOCA ▶ PARA VER LA RUTA</span>
       </div>
 
-      <div class="loadingMsg" id="loadingMsg">
-        Cargando video de ruta...
-      </div>
+      <div class="playHint" id="playHint">▶ Toca reproducir para ver la ruta</div>
 
-      <video
+      <iframe
         class="video"
-        id="routeVideo"
-        preload="metadata"
-        playsinline
-        webkit-playsinline
-        disablepictureinpicture
-        controlslist="nodownload noplaybackrate noremoteplayback"
-        src="https://drive.google.com/uc?export=download&id=1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L">
-        Tu navegador no puede reproducir este video.
-      </video>
+        id="driveFrame"
+        loading="lazy"
+        allow="autoplay; fullscreen"
+        allowfullscreen
+        src="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview">
+      </iframe>
 
-      <button class="touchLayer" id="touchLayer" type="button" aria-label="Reproducir o pausar video"></button>
+      <button class="cleanShield" id="cleanShield" type="button" aria-label="Pantalla limpia"></button>
+      <div class="miniToast" id="miniToast">Pantalla limpia. Toca dos veces si ocupas controles.</div>
 
-      <button class="bigPlay" id="bigPlay" type="button" aria-label="Reproducir video">
-        <span>▶</span>
-      </button>
-
-      <div class="status" id="status">Video pausado</div>
       <div class="watermark">Creador: Brayan El mero mero</div>
-
-      <div class="errorMsg" id="errorMsg">
-        No se pudo cargar el video directo desde Drive.<br>
-        Revisa que el archivo esté público como “Cualquier persona con el enlace puede ver”.<br><br>
-        <a href="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview" target="_blank" rel="noopener">
-          Abrir video en Drive
-        </a>
-      </div>
     </div>
 
     <a class="btn" href="https://maps.app.goo.gl/hoVzTguSpfQJg3tw8" target="_blank" rel="noopener">
@@ -472,24 +407,24 @@ h1{
     </div>
 
     <div class="smallHelp">
-      Toca el video para pausar o continuar. Los controles grandes fueron ocultados para que la ruta se vea limpia.
+      Si los controles aparecen, espera unos segundos: la pantalla se limpia sola para ver mejor el video.
     </div>
 
   </div>
 </div>
 
 <script>
-const video = document.getElementById('routeVideo');
-const bigPlay = document.getElementById('bigPlay');
-const touchLayer = document.getElementById('touchLayer');
 const flashPopup = document.getElementById('flashPopup');
-const progressBar = document.getElementById('progressBar');
-const statusBox = document.getElementById('status');
-const loadingMsg = document.getElementById('loadingMsg');
-const errorMsg = document.getElementById('errorMsg');
+const playHint = document.getElementById('playHint');
+const cleanShield = document.getElementById('cleanShield');
+const miniToast = document.getElementById('miniToast');
+const driveFrame = document.getElementById('driveFrame');
 
-let hideStatusTimer = null;
-let hidePopupTimer = null;
+let popupTimer = null;
+let shieldTimer = null;
+let toastTimer = null;
+let shieldTapCount = 0;
+let shieldTapTimer = null;
 
 function hidePopup(){
   if(!flashPopup || flashPopup.classList.contains('hide')) return;
@@ -501,98 +436,81 @@ function hidePopup(){
   }, 280);
 }
 
-function showStatus(text){
-  statusBox.textContent = text;
-  statusBox.classList.add('show');
-
-  if(hideStatusTimer){
-    clearTimeout(hideStatusTimer);
+function hidePlayHint(){
+  if(playHint){
+    playHint.classList.add('hide');
+    setTimeout(function(){
+      playHint.style.display = 'none';
+    }, 300);
   }
-
-  hideStatusTimer = setTimeout(function(){
-    statusBox.classList.remove('show');
-  }, 850);
 }
 
-function playVideo(){
+function showToast(text){
+  miniToast.textContent = text;
+  miniToast.classList.add('show');
+
+  if(toastTimer){
+    clearTimeout(toastTimer);
+  }
+
+  toastTimer = setTimeout(function(){
+    miniToast.classList.remove('show');
+  }, 1300);
+}
+
+/*
+  Cuando el usuario toca el iframe de Drive, normalmente la ventana pierde foco.
+  Entonces esperamos unos segundos y ponemos un escudo transparente encima.
+  Eso ayuda a que los controles de Drive se escondan y no vuelvan a salir por toques accidentales.
+*/
+function activateShieldSoon(){
   hidePopup();
+  hidePlayHint();
 
-  const playPromise = video.play();
-
-  if(playPromise !== undefined){
-    playPromise
-      .then(function(){
-        bigPlay.style.display = 'none';
-        showStatus('Reproduciendo video');
-      })
-      .catch(function(){
-        bigPlay.style.display = 'flex';
-        showStatus('Toca reproducir');
-      });
+  if(shieldTimer){
+    clearTimeout(shieldTimer);
   }
+
+  shieldTimer = setTimeout(function(){
+    cleanShield.classList.add('active');
+  }, 2800);
 }
 
-function toggleVideo(){
-  if(video.paused || video.ended){
-    playVideo();
+window.addEventListener('blur', function(){
+  activateShieldSoon();
+});
+
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden){
+    hidePopup();
+  }
+});
+
+cleanShield.addEventListener('click', function(){
+  shieldTapCount++;
+
+  if(shieldTapTimer){
+    clearTimeout(shieldTapTimer);
+  }
+
+  shieldTapTimer = setTimeout(function(){
+    shieldTapCount = 0;
+  }, 450);
+
+  if(shieldTapCount >= 2){
+    shieldTapCount = 0;
+    cleanShield.classList.remove('active');
+    showToast('Controles activados por 4 segundos');
+
+    setTimeout(function(){
+      cleanShield.classList.add('active');
+    }, 4000);
   }else{
-    video.pause();
-  }
-}
-
-bigPlay.addEventListener('click', function(e){
-  e.preventDefault();
-  e.stopPropagation();
-  playVideo();
-});
-
-touchLayer.addEventListener('click', function(e){
-  e.preventDefault();
-  toggleVideo();
-});
-
-video.addEventListener('loadedmetadata', function(){
-  loadingMsg.style.display = 'none';
-});
-
-video.addEventListener('canplay', function(){
-  loadingMsg.style.display = 'none';
-});
-
-video.addEventListener('playing', function(){
-  loadingMsg.style.display = 'none';
-  bigPlay.style.display = 'none';
-  hidePopup();
-});
-
-video.addEventListener('pause', function(){
-  if(!video.ended){
-    bigPlay.style.display = 'flex';
-    showStatus('Video pausado');
+    showToast('Pantalla limpia. Doble toque para controles.');
   }
 });
 
-video.addEventListener('ended', function(){
-  bigPlay.style.display = 'flex';
-  showStatus('Video terminado');
-  progressBar.style.width = '100%';
-});
-
-video.addEventListener('timeupdate', function(){
-  if(video.duration){
-    const percent = Math.max(0, Math.min(100, (video.currentTime / video.duration) * 100));
-    progressBar.style.width = percent + '%';
-  }
-});
-
-video.addEventListener('error', function(){
-  loadingMsg.style.display = 'none';
-  errorMsg.style.display = 'flex';
-  bigPlay.style.display = 'none';
-  touchLayer.style.display = 'none';
-});
-
-hidePopupTimer = setTimeout(function(){
+popupTimer = setTimeout(function(){
   hidePopup();
 }, 2200);
 
