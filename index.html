@@ -2,14 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="theme-color" content="#eef3ff">
 <title>Cómo llegar a la bodega</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
-html,body{
+html,
+body{
   margin:0;
   min-height:100%;
   font-family:Arial,Helvetica,sans-serif;
@@ -81,47 +85,216 @@ h1{
   background:#000;
   box-shadow:0 10px 26px rgba(0,0,0,.16);
   aspect-ratio:16/9;
+  isolation:isolate;
 }
 
+/*
+  Usamos <video> directo desde Drive, no iframe preview.
+  Así no aparecen los controles gigantes de Google Drive encima del video.
+*/
 .video{
   width:100%;
   height:100%;
-  border:0;
   display:block;
   background:#000;
+  object-fit:contain;
+  opacity:1 !important;
+  filter:none !important;
+  border:0;
+}
+
+.flashPopup{
+  position:absolute;
+  z-index:9;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(92%,520px);
+  padding:16px 14px;
+  border-radius:22px;
+  text-align:center;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(255,255,255,.98),rgba(255,255,255,.76)),
+    linear-gradient(135deg,#fff200 0%,#ff7a00 35%,#ff006e 65%,#006bff 100%);
+  border:3px solid #fff;
+  box-shadow:0 18px 50px rgba(0,0,0,.38);
+  pointer-events:none;
+  animation:popupBeat .62s ease-in-out infinite alternate;
+}
+
+.flashPopup strong{
+  display:block;
+  color:#111827;
+  font-size:clamp(23px,5.6vw,46px);
+  line-height:1.03;
+  letter-spacing:-.04em;
+  font-weight:1000;
+  text-transform:uppercase;
+  text-shadow:0 2px 0 rgba(255,255,255,.85);
+}
+
+.flashPopup span{
+  display:inline-block;
+  margin-top:10px;
+  padding:8px 13px;
+  border-radius:999px;
+  background:#101828;
+  color:#fff;
+  font-size:clamp(13px,3vw,20px);
+  line-height:1;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+.flashPopup.hide{
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.92);
+  transition:opacity .25s ease,transform .25s ease;
+}
+
+@keyframes popupBeat{
+  from{
+    transform:translate(-50%,-50%) scale(1);
+    filter:saturate(1);
+  }
+  to{
+    transform:translate(-50%,-50%) scale(1.025);
+    filter:saturate(1.25);
+  }
+}
+
+.bigPlay{
+  position:absolute;
+  z-index:7;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:88px;
+  height:88px;
+  border-radius:999px;
+  border:0;
+  background:rgba(255,255,255,.94);
+  color:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 14px 35px rgba(0,0,0,.30);
+  -webkit-tap-highlight-color:transparent;
+}
+
+.bigPlay span{
+  transform:translateX(4px);
+}
+
+.bigPlay:active{
+  transform:translate(-50%,-50%) scale(.96);
+}
+
+.touchLayer{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  background:transparent;
+  border:0;
+  margin:0;
+  padding:0;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.touchLayer:focus{
+  outline:none;
+}
+
+.progress{
+  position:absolute;
+  z-index:8;
+  left:0;
+  right:0;
+  top:0;
+  height:5px;
+  background:rgba(255,255,255,.22);
+  pointer-events:none;
+}
+
+.progress span{
+  display:block;
+  width:0%;
+  height:100%;
+  background:#fff;
+  transition:width .2s linear;
 }
 
 .watermark{
   position:absolute;
   left:10px;
   bottom:10px;
-  z-index:3;
+  z-index:8;
+  max-width:calc(100% - 20px);
   padding:7px 10px;
   border-radius:999px;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.56);
   color:#fff;
   font-size:12px;
   font-weight:bold;
   letter-spacing:.2px;
   pointer-events:none;
   backdrop-filter:blur(6px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
-.playHint{
+.status{
   position:absolute;
-  top:10px;
+  z-index:8;
   left:50%;
+  bottom:48px;
   transform:translateX(-50%);
-  z-index:4;
-  padding:8px 12px;
+  padding:7px 10px;
   border-radius:999px;
-  background:rgba(255,255,255,.92);
-  color:#111827;
-  font-size:13px;
+  background:rgba(0,0,0,.68);
+  color:#fff;
+  font-size:12px;
   font-weight:bold;
-  box-shadow:0 8px 18px rgba(0,0,0,.14);
   pointer-events:none;
+  opacity:0;
+  transition:opacity .2s ease;
   white-space:nowrap;
+}
+
+.status.show{
+  opacity:1;
+}
+
+.loadingMsg,
+.errorMsg{
+  position:absolute;
+  inset:0;
+  z-index:6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:18px;
+  color:#fff;
+  background:rgba(0,0,0,.70);
+  font-size:15px;
+  line-height:1.35;
+  font-weight:bold;
+}
+
+.errorMsg{
+  display:none;
+  z-index:10;
+}
+
+.errorMsg a{
+  color:#fff;
+  text-decoration:underline;
 }
 
 .btn{
@@ -139,6 +312,7 @@ h1{
   text-decoration:none;
   font-size:16px;
   box-shadow:0 10px 24px rgba(11,116,255,.24);
+  -webkit-tap-highlight-color:transparent;
 }
 
 .btn:active{
@@ -155,65 +329,78 @@ h1{
   line-height:1.35;
 }
 
-.floatMap{
-  position:fixed;
-  right:14px;
-  bottom:14px;
-  z-index:20;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  background:#12a150;
-  color:#fff;
-  padding:13px 15px;
-  border-radius:999px;
-  text-decoration:none;
-  font-weight:bold;
-  font-size:14px;
-  box-shadow:0 12px 28px rgba(18,161,80,.35);
+.smallHelp{
+  margin-top:10px;
+  color:#98a2b3;
+  text-align:center;
+  font-size:12px;
+  line-height:1.35;
 }
 
-.floatMap:active{
-  transform:scale(.98);
-}
-
-.protect{
-  display:none;
-}
+/*
+  IMPORTANTE:
+  Quité el botón flotante verde porque en móvil se montaba encima del contenido
+  y hacía que todo se viera más cargado.
+*/
 
 @media (max-width:520px){
-  body{padding:10px}
-  .card{border-radius:20px;padding:14px}
-  h1{font-size:20px}
-  .sub{font-size:14px}
+  body{
+    padding:10px;
+  }
 
+  .card{
+    border-radius:20px;
+    padding:14px;
+  }
+
+  h1{
+    font-size:20px;
+  }
+
+  .sub{
+    font-size:14px;
+  }
+
+  /*
+    En móvil el video queda vertical y grande.
+    object-fit:contain evita recorte del video.
+  */
   .videoBox{
     aspect-ratio:9/16;
-    max-height:72vh;
+    max-height:76vh;
   }
 
-  .floatMap{
-    left:14px;
-    right:14px;
-    justify-content:center;
-    bottom:12px;
+  .bigPlay{
+    width:78px;
+    height:78px;
+    font-size:38px;
   }
 
-  .note{
-    margin-bottom:58px;
+  .flashPopup{
+    width:91%;
+    padding:14px 12px;
+    border-radius:20px;
+  }
+
+  .watermark{
+    left:8px;
+    bottom:8px;
+    font-size:11px;
+  }
+
+  .status{
+    bottom:43px;
   }
 }
 
 @media (orientation:landscape) and (max-height:520px){
-  .wrap{max-width:720px}
+  .wrap{
+    max-width:720px;
+  }
+
   .videoBox{
     aspect-ratio:16/9;
     max-height:70vh;
-  }
-  .floatMap{
-    left:auto;
-    right:14px;
-    bottom:14px;
   }
 }
 </style>
@@ -232,18 +419,48 @@ h1{
       </div>
     </div>
 
-    <div class="videoBox">
-      <div class="playHint">▶ Toca reproducir para ver la ruta</div>
+    <div class="videoBox" id="videoBox">
+      <div class="progress" aria-hidden="true">
+        <span id="progressBar"></span>
+      </div>
 
-      <iframe
+      <div class="flashPopup" id="flashPopup" aria-hidden="true">
+        <strong>DALE REPRODUCIR AL VIDEO PARA VER LA DIRECCIÓN</strong>
+        <span>TOCA ▶ PARA VER LA RUTA</span>
+      </div>
+
+      <div class="loadingMsg" id="loadingMsg">
+        Cargando video de ruta...
+      </div>
+
+      <video
         class="video"
-        loading="lazy"
-        allow="autoplay; fullscreen"
-        allowfullscreen
-        src="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview">
-      </iframe>
+        id="routeVideo"
+        preload="metadata"
+        playsinline
+        webkit-playsinline
+        disablepictureinpicture
+        controlslist="nodownload noplaybackrate noremoteplayback"
+        src="https://drive.google.com/uc?export=download&id=1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L">
+        Tu navegador no puede reproducir este video.
+      </video>
 
+      <button class="touchLayer" id="touchLayer" type="button" aria-label="Reproducir o pausar video"></button>
+
+      <button class="bigPlay" id="bigPlay" type="button" aria-label="Reproducir video">
+        <span>▶</span>
+      </button>
+
+      <div class="status" id="status">Video pausado</div>
       <div class="watermark">Creador: Brayan El mero mero</div>
+
+      <div class="errorMsg" id="errorMsg">
+        No se pudo cargar el video directo desde Drive.<br>
+        Revisa que el archivo esté público como “Cualquier persona con el enlace puede ver”.<br><br>
+        <a href="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview" target="_blank" rel="noopener">
+          Abrir video en Drive
+        </a>
+      </div>
     </div>
 
     <a class="btn" href="https://maps.app.goo.gl/hoVzTguSpfQJg3tw8" target="_blank" rel="noopener">
@@ -254,14 +471,131 @@ h1{
       Este video es solo para guía de llegada. Revisa el video completo y luego abre la ubicación en Google Maps.
     </div>
 
+    <div class="smallHelp">
+      Toca el video para pausar o continuar. Los controles grandes fueron ocultados para que la ruta se vea limpia.
+    </div>
+
   </div>
 </div>
 
-<a class="floatMap" href="https://maps.app.goo.gl/hoVzTguSpfQJg3tw8" target="_blank" rel="noopener">
-  📍 Ver ubicación
-</a>
-
 <script>
+const video = document.getElementById('routeVideo');
+const bigPlay = document.getElementById('bigPlay');
+const touchLayer = document.getElementById('touchLayer');
+const flashPopup = document.getElementById('flashPopup');
+const progressBar = document.getElementById('progressBar');
+const statusBox = document.getElementById('status');
+const loadingMsg = document.getElementById('loadingMsg');
+const errorMsg = document.getElementById('errorMsg');
+
+let hideStatusTimer = null;
+let hidePopupTimer = null;
+
+function hidePopup(){
+  if(!flashPopup || flashPopup.classList.contains('hide')) return;
+
+  flashPopup.classList.add('hide');
+
+  setTimeout(function(){
+    flashPopup.style.display = 'none';
+  }, 280);
+}
+
+function showStatus(text){
+  statusBox.textContent = text;
+  statusBox.classList.add('show');
+
+  if(hideStatusTimer){
+    clearTimeout(hideStatusTimer);
+  }
+
+  hideStatusTimer = setTimeout(function(){
+    statusBox.classList.remove('show');
+  }, 850);
+}
+
+function playVideo(){
+  hidePopup();
+
+  const playPromise = video.play();
+
+  if(playPromise !== undefined){
+    playPromise
+      .then(function(){
+        bigPlay.style.display = 'none';
+        showStatus('Reproduciendo video');
+      })
+      .catch(function(){
+        bigPlay.style.display = 'flex';
+        showStatus('Toca reproducir');
+      });
+  }
+}
+
+function toggleVideo(){
+  if(video.paused || video.ended){
+    playVideo();
+  }else{
+    video.pause();
+  }
+}
+
+bigPlay.addEventListener('click', function(e){
+  e.preventDefault();
+  e.stopPropagation();
+  playVideo();
+});
+
+touchLayer.addEventListener('click', function(e){
+  e.preventDefault();
+  toggleVideo();
+});
+
+video.addEventListener('loadedmetadata', function(){
+  loadingMsg.style.display = 'none';
+});
+
+video.addEventListener('canplay', function(){
+  loadingMsg.style.display = 'none';
+});
+
+video.addEventListener('playing', function(){
+  loadingMsg.style.display = 'none';
+  bigPlay.style.display = 'none';
+  hidePopup();
+});
+
+video.addEventListener('pause', function(){
+  if(!video.ended){
+    bigPlay.style.display = 'flex';
+    showStatus('Video pausado');
+  }
+});
+
+video.addEventListener('ended', function(){
+  bigPlay.style.display = 'flex';
+  showStatus('Video terminado');
+  progressBar.style.width = '100%';
+});
+
+video.addEventListener('timeupdate', function(){
+  if(video.duration){
+    const percent = Math.max(0, Math.min(100, (video.currentTime / video.duration) * 100));
+    progressBar.style.width = percent + '%';
+  }
+});
+
+video.addEventListener('error', function(){
+  loadingMsg.style.display = 'none';
+  errorMsg.style.display = 'flex';
+  bigPlay.style.display = 'none';
+  touchLayer.style.display = 'none';
+});
+
+hidePopupTimer = setTimeout(function(){
+  hidePopup();
+}, 2200);
+
 document.addEventListener('keydown', function(e){
   if (
     e.key === 'F12' ||
