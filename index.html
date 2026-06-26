@@ -89,59 +89,18 @@ h1{
 }
 
 /*
-  Contenedor interno del iframe.
-  Al iniciar queda normal para que el usuario pueda tocar reproducir.
-  Después del primer toque se activa .cleanMode y el iframe se hace más alto.
-  Eso empuja los controles internos de Drive hacia abajo y quedan recortados.
+  Esta versión NO usa iframe de Drive.
+  Usa video normal para que no salgan los botones gigantes de Google Drive.
+  El video no se mueve, no se baja y no se recorta por controles.
 */
-.driveStage{
-  position:absolute;
-  inset:0;
-  overflow:hidden;
-  background:#000;
-  z-index:1;
-}
-
 .video{
-  position:absolute;
-  left:0;
-  top:0;
   width:100%;
   height:100%;
-  border:0;
   display:block;
   background:#000;
+  object-fit:contain;
   opacity:1 !important;
   filter:none !important;
-}
-
-/*
-  MODO LIMPIO:
-  Esta es la parte que oculta los botones molestos de Drive.
-  No elimina el reproductor de Google, lo recorta para sacar los controles visibles.
-*/
-.videoBox.cleanMode .video{
-  height:calc(100% + 330px);
-  top:-18px;
-}
-
-/*
-  Cubre el botón de abrir en ventana nueva que Drive mete arriba a la derecha.
-*/
-.cornerCover{
-  position:absolute;
-  right:0;
-  top:0;
-  z-index:15;
-  width:82px;
-  height:82px;
-  background:#000;
-  pointer-events:none;
-  opacity:0;
-}
-
-.videoBox.cleanMode .cornerCover{
-  opacity:1;
 }
 
 /*
@@ -229,31 +188,94 @@ h1{
   transition:opacity .25s ease;
 }
 
-/*
-  Escudo transparente.
-  Se activa después del primer toque para impedir que el cliente saque de nuevo
-  todos los controles gigantes al tocar accidentalmente el video.
-*/
-.cleanShield{
+.bigPlay{
+  position:absolute;
+  z-index:26;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:86px;
+  height:86px;
+  border-radius:999px;
+  border:0;
+  background:rgba(255,255,255,.94);
+  color:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 14px 35px rgba(0,0,0,.30);
+  -webkit-tap-highlight-color:transparent;
+}
+
+.bigPlay span{
+  transform:translateX(4px);
+}
+
+.bigPlay:active{
+  transform:translate(-50%,-50%) scale(.96);
+}
+
+.touchLayer{
   position:absolute;
   inset:0;
-  z-index:16;
+  z-index:24;
   background:transparent;
-  display:none;
   border:0;
-  padding:0;
   margin:0;
+  padding:0;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
 
-.cleanShield.active{
-  display:block;
+.touchLayer:focus{
+  outline:none;
 }
 
-.miniToast{
+.progress{
   position:absolute;
-  z-index:23;
+  z-index:25;
+  left:0;
+  right:0;
+  top:0;
+  height:5px;
+  background:rgba(255,255,255,.22);
+  pointer-events:none;
+}
+
+.progress span{
+  display:block;
+  width:0%;
+  height:100%;
+  background:#fff;
+  transition:width .2s linear;
+}
+
+.watermark{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  z-index:25;
+  max-width:calc(100% - 20px);
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.56);
+  color:#fff;
+  font-size:12px;
+  font-weight:bold;
+  letter-spacing:.2px;
+  pointer-events:none;
+  backdrop-filter:blur(6px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.status{
+  position:absolute;
+  z-index:27;
   left:50%;
   bottom:48px;
   transform:translateX(-50%);
@@ -269,28 +291,29 @@ h1{
   white-space:nowrap;
 }
 
-.miniToast.show{
+.status.show{
   opacity:1;
 }
 
-.watermark{
+.errorMsg{
   position:absolute;
-  left:10px;
-  bottom:10px;
-  z-index:24;
-  max-width:calc(100% - 20px);
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(0,0,0,.56);
+  inset:0;
+  z-index:40;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:22px;
   color:#fff;
-  font-size:12px;
+  background:rgba(0,0,0,.82);
+  font-size:15px;
+  line-height:1.35;
   font-weight:bold;
-  letter-spacing:.2px;
-  pointer-events:none;
-  backdrop-filter:blur(6px);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+}
+
+.errorMsg a{
+  color:#fff;
+  text-decoration:underline;
 }
 
 .btn{
@@ -356,17 +379,10 @@ h1{
     max-height:76vh;
   }
 
-  /*
-    En móvil se recorta más fuerte porque Drive mete controles muy grandes.
-  */
-  .videoBox.cleanMode .video{
-    height:calc(100% + 420px);
-    top:-30px;
-  }
-
-  .cornerCover{
-    width:88px;
-    height:88px;
+  .bigPlay{
+    width:78px;
+    height:78px;
+    font-size:38px;
   }
 
   .flashPopup{
@@ -388,7 +404,7 @@ h1{
     font-size:11px;
   }
 
-  .miniToast{
+  .status{
     bottom:43px;
   }
 }
@@ -401,11 +417,6 @@ h1{
   .videoBox{
     aspect-ratio:16/9;
     max-height:70vh;
-  }
-
-  .videoBox.cleanMode .video{
-    height:calc(100% + 220px);
-    top:-12px;
   }
 }
 </style>
@@ -425,6 +436,10 @@ h1{
     </div>
 
     <div class="videoBox" id="videoBox">
+      <div class="progress" aria-hidden="true">
+        <span id="progressBar"></span>
+      </div>
+
       <div class="flashPopup" id="flashPopup" aria-hidden="true">
         <strong>DALE REPRODUCIR AL VIDEO PARA VER LA DIRECCIÓN</strong>
         <span>TOCA ▶ PARA VER LA RUTA</span>
@@ -432,23 +447,42 @@ h1{
 
       <div class="playHint" id="playHint">▶ Toca reproducir para ver la ruta</div>
 
-      <div class="driveStage">
-        <iframe
-          class="video"
-          id="driveFrame"
-          loading="lazy"
-          allow="autoplay; fullscreen"
-          allowfullscreen
-          src="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview">
-        </iframe>
-      </div>
+      <!--
+        IMPORTANTE:
+        Sube tu video al mismo lugar donde está este index.html
+        y nómbralo exactamente: video-ruta.mp4
 
-      <div class="cornerCover" aria-hidden="true"></div>
+        Esta es la única forma limpia de quitar al 100% los botones gigantes
+        de Google Drive sin recortar ni mover el video.
+      -->
+      <video
+        class="video"
+        id="routeVideo"
+        preload="metadata"
+        playsinline
+        webkit-playsinline
+        disablepictureinpicture
+        controlslist="nodownload noplaybackrate noremoteplayback">
+        <source src="video-ruta.mp4" type="video/mp4">
+        Tu navegador no puede reproducir este video.
+      </video>
 
-      <button class="cleanShield" id="cleanShield" type="button" aria-label="Pantalla limpia"></button>
-      <div class="miniToast" id="miniToast">Pantalla limpia. Doble toque para controles.</div>
+      <button class="touchLayer" id="touchLayer" type="button" aria-label="Reproducir o pausar video"></button>
 
+      <button class="bigPlay" id="bigPlay" type="button" aria-label="Reproducir video">
+        <span>▶</span>
+      </button>
+
+      <div class="status" id="status">Video pausado</div>
       <div class="watermark">Creador: Brayan El mero mero</div>
+
+      <div class="errorMsg" id="errorMsg">
+        No se encontró el archivo <b>video-ruta.mp4</b>.<br><br>
+        Sube el video con ese nombre en la misma carpeta del index.html.<br><br>
+        <a href="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview" target="_blank" rel="noopener">
+          Abrir video original en Drive
+        </a>
+      </div>
     </div>
 
     <a class="btn" href="https://maps.app.goo.gl/hoVzTguSpfQJg3tw8" target="_blank" rel="noopener">
@@ -460,25 +494,24 @@ h1{
     </div>
 
     <div class="smallHelp">
-      Si ocupas controles, toca dos veces el video. Después se vuelve a limpiar solo.
+      Toca el video para pausar o continuar. Sin controles gigantes encima de la ruta.
     </div>
 
   </div>
 </div>
 
 <script>
-const videoBox = document.getElementById('videoBox');
+const video = document.getElementById('routeVideo');
+const bigPlay = document.getElementById('bigPlay');
+const touchLayer = document.getElementById('touchLayer');
 const flashPopup = document.getElementById('flashPopup');
 const playHint = document.getElementById('playHint');
-const cleanShield = document.getElementById('cleanShield');
-const miniToast = document.getElementById('miniToast');
+const progressBar = document.getElementById('progressBar');
+const statusBox = document.getElementById('status');
+const errorMsg = document.getElementById('errorMsg');
 
-let popupTimer = null;
-let cleanTimer = null;
-let recleanTimer = null;
-let toastTimer = null;
-let shieldTapCount = 0;
-let shieldTapTimer = null;
+let hideStatusTimer = null;
+let hidePopupTimer = null;
 
 function hidePopup(){
   if(!flashPopup || flashPopup.classList.contains('hide')) return;
@@ -499,94 +532,90 @@ function hidePlayHint(){
   }
 }
 
-function showToast(text){
-  miniToast.textContent = text;
-  miniToast.classList.add('show');
+function showStatus(text){
+  statusBox.textContent = text;
+  statusBox.classList.add('show');
 
-  if(toastTimer){
-    clearTimeout(toastTimer);
+  if(hideStatusTimer){
+    clearTimeout(hideStatusTimer);
   }
 
-  toastTimer = setTimeout(function(){
-    miniToast.classList.remove('show');
-  }, 1300);
+  hideStatusTimer = setTimeout(function(){
+    statusBox.classList.remove('show');
+  }, 850);
 }
 
-function cleanVideo(){
-  hidePopup();
-  hidePlayHint();
-  videoBox.classList.add('cleanMode');
-  cleanShield.classList.add('active');
-}
-
-function scheduleClean(){
+function playVideo(){
   hidePopup();
   hidePlayHint();
 
-  if(cleanTimer){
-    clearTimeout(cleanTimer);
-  }
+  const playPromise = video.play();
 
-  /*
-    Le damos unos segundos a Drive para que arranque y luego recortamos controles.
-  */
-  cleanTimer = setTimeout(function(){
-    cleanVideo();
-  }, 2600);
+  if(playPromise !== undefined){
+    playPromise
+      .then(function(){
+        bigPlay.style.display = 'none';
+        showStatus('Reproduciendo video');
+      })
+      .catch(function(){
+        bigPlay.style.display = 'flex';
+        showStatus('Toca reproducir');
+      });
+  }
 }
 
-/*
-  Cuando el usuario toca el iframe de Drive, normalmente la página pierde foco.
-  Eso lo usamos como señal de que ya tocó reproducir.
-*/
-window.addEventListener('blur', function(){
-  scheduleClean();
-});
-
-window.addEventListener('focus', function(){
-  /*
-    En algunos móviles el foco vuelve rápido. Igual limpiamos.
-  */
-  if(cleanTimer){
-    return;
-  }
-});
-
-cleanShield.addEventListener('click', function(){
-  shieldTapCount++;
-
-  if(shieldTapTimer){
-    clearTimeout(shieldTapTimer);
-  }
-
-  shieldTapTimer = setTimeout(function(){
-    shieldTapCount = 0;
-  }, 450);
-
-  if(shieldTapCount >= 2){
-    shieldTapCount = 0;
-
-    /*
-      Doble toque: permite controles por 4 segundos.
-      Luego vuelve a recortar automáticamente.
-    */
-    videoBox.classList.remove('cleanMode');
-    cleanShield.classList.remove('active');
-    showToast('Controles activados por 4 segundos');
-
-    if(recleanTimer){
-      clearTimeout(recleanTimer);
-    }
-
-    recleanTimer = setTimeout(function(){
-      cleanVideo();
-    }, 4000);
+function toggleVideo(){
+  if(video.paused || video.ended){
+    playVideo();
   }else{
-    showToast('Pantalla limpia. Doble toque para controles.');
+    video.pause();
+  }
+}
+
+bigPlay.addEventListener('click', function(e){
+  e.preventDefault();
+  e.stopPropagation();
+  playVideo();
+});
+
+touchLayer.addEventListener('click', function(e){
+  e.preventDefault();
+  toggleVideo();
+});
+
+video.addEventListener('playing', function(){
+  bigPlay.style.display = 'none';
+  hidePopup();
+  hidePlayHint();
+});
+
+video.addEventListener('pause', function(){
+  if(!video.ended){
+    bigPlay.style.display = 'flex';
+    showStatus('Video pausado');
   }
 });
 
-popupTimer = setTimeout(function(){
+video.addEventListener('ended', function(){
+  bigPlay.style.display = 'flex';
+  showStatus('Video terminado');
+  progressBar.style.width = '100%';
+});
+
+video.addEventListener('timeupdate', function(){
+  if(video.duration){
+    const percent = Math.max(0, Math.min(100, (video.currentTime / video.duration) * 100));
+    progressBar.style.width = percent + '%';
+  }
+});
+
+video.addEventListener('error', function(){
+  errorMsg.style.display = 'flex';
+  bigPlay.style.display = 'none';
+  touchLayer.style.display = 'none';
+});
+
+hidePopupTimer = setTimeout(function(){
   hidePopup();
 }, 2200);
 
