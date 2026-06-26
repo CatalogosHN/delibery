@@ -88,9 +88,24 @@ h1{
   isolation:isolate;
 }
 
-.video{
+/*
+  Contenedor interno del iframe.
+  Al iniciar queda normal para que el usuario pueda tocar reproducir.
+  Después del primer toque se activa .cleanMode y el iframe se hace más alto.
+  Eso empuja los controles internos de Drive hacia abajo y quedan recortados.
+*/
+.driveStage{
   position:absolute;
   inset:0;
+  overflow:hidden;
+  background:#000;
+  z-index:1;
+}
+
+.video{
+  position:absolute;
+  left:0;
+  top:0;
   width:100%;
   height:100%;
   border:0;
@@ -101,11 +116,40 @@ h1{
 }
 
 /*
+  MODO LIMPIO:
+  Esta es la parte que oculta los botones molestos de Drive.
+  No elimina el reproductor de Google, lo recorta para sacar los controles visibles.
+*/
+.videoBox.cleanMode .video{
+  height:calc(100% + 330px);
+  top:-18px;
+}
+
+/*
+  Cubre el botón de abrir en ventana nueva que Drive mete arriba a la derecha.
+*/
+.cornerCover{
+  position:absolute;
+  right:0;
+  top:0;
+  z-index:15;
+  width:82px;
+  height:82px;
+  background:#000;
+  pointer-events:none;
+  opacity:0;
+}
+
+.videoBox.cleanMode .cornerCover{
+  opacity:1;
+}
+
+/*
   Ventana emergente grande por 2 segundos.
 */
 .flashPopup{
   position:absolute;
-  z-index:20;
+  z-index:30;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
@@ -163,16 +207,12 @@ h1{
   }
 }
 
-/*
-  Mensaje superior simple.
-  No bloquea el video.
-*/
 .playHint{
   position:absolute;
   top:10px;
   left:50%;
   transform:translateX(-50%);
-  z-index:12;
+  z-index:22;
   padding:8px 12px;
   border-radius:999px;
   background:rgba(255,255,255,.93);
@@ -190,14 +230,14 @@ h1{
 }
 
 /*
-  Este escudo transparente aparece después del primer toque al video.
-  La idea es dejar que los controles de Drive se escondan solos y evitar
-  que el usuario vuelva a tocar accidentalmente y los saque otra vez.
+  Escudo transparente.
+  Se activa después del primer toque para impedir que el cliente saque de nuevo
+  todos los controles gigantes al tocar accidentalmente el video.
 */
 .cleanShield{
   position:absolute;
   inset:0;
-  z-index:11;
+  z-index:16;
   background:transparent;
   display:none;
   border:0;
@@ -213,7 +253,7 @@ h1{
 
 .miniToast{
   position:absolute;
-  z-index:13;
+  z-index:23;
   left:50%;
   bottom:48px;
   transform:translateX(-50%);
@@ -237,7 +277,7 @@ h1{
   position:absolute;
   left:10px;
   bottom:10px;
-  z-index:12;
+  z-index:24;
   max-width:calc(100% - 20px);
   padding:7px 10px;
   border-radius:999px;
@@ -293,11 +333,6 @@ h1{
   line-height:1.35;
 }
 
-/*
-  El botón flotante verde fue eliminado porque en móvil estorbaba
-  y tapaba contenido. Se deja solo el botón azul principal.
-*/
-
 @media (max-width:520px){
   body{
     padding:10px;
@@ -316,13 +351,22 @@ h1{
     font-size:14px;
   }
 
-  /*
-    Móvil vertical grande.
-    Se mantiene el iframe de Drive porque es el que sí carga.
-  */
   .videoBox{
     aspect-ratio:9/16;
     max-height:76vh;
+  }
+
+  /*
+    En móvil se recorta más fuerte porque Drive mete controles muy grandes.
+  */
+  .videoBox.cleanMode .video{
+    height:calc(100% + 420px);
+    top:-30px;
+  }
+
+  .cornerCover{
+    width:88px;
+    height:88px;
   }
 
   .flashPopup{
@@ -358,6 +402,11 @@ h1{
     aspect-ratio:16/9;
     max-height:70vh;
   }
+
+  .videoBox.cleanMode .video{
+    height:calc(100% + 220px);
+    top:-12px;
+  }
 }
 </style>
 </head>
@@ -383,17 +432,21 @@ h1{
 
       <div class="playHint" id="playHint">▶ Toca reproducir para ver la ruta</div>
 
-      <iframe
-        class="video"
-        id="driveFrame"
-        loading="lazy"
-        allow="autoplay; fullscreen"
-        allowfullscreen
-        src="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview">
-      </iframe>
+      <div class="driveStage">
+        <iframe
+          class="video"
+          id="driveFrame"
+          loading="lazy"
+          allow="autoplay; fullscreen"
+          allowfullscreen
+          src="https://drive.google.com/file/d/1ImjY-orw-2ItEN2iBs9p15MTeOTrIO5L/preview">
+        </iframe>
+      </div>
+
+      <div class="cornerCover" aria-hidden="true"></div>
 
       <button class="cleanShield" id="cleanShield" type="button" aria-label="Pantalla limpia"></button>
-      <div class="miniToast" id="miniToast">Pantalla limpia. Toca dos veces si ocupas controles.</div>
+      <div class="miniToast" id="miniToast">Pantalla limpia. Doble toque para controles.</div>
 
       <div class="watermark">Creador: Brayan El mero mero</div>
     </div>
@@ -407,21 +460,22 @@ h1{
     </div>
 
     <div class="smallHelp">
-      Si los controles aparecen, espera unos segundos: la pantalla se limpia sola para ver mejor el video.
+      Si ocupas controles, toca dos veces el video. Después se vuelve a limpiar solo.
     </div>
 
   </div>
 </div>
 
 <script>
+const videoBox = document.getElementById('videoBox');
 const flashPopup = document.getElementById('flashPopup');
 const playHint = document.getElementById('playHint');
 const cleanShield = document.getElementById('cleanShield');
 const miniToast = document.getElementById('miniToast');
-const driveFrame = document.getElementById('driveFrame');
 
 let popupTimer = null;
-let shieldTimer = null;
+let cleanTimer = null;
+let recleanTimer = null;
 let toastTimer = null;
 let shieldTapCount = 0;
 let shieldTapTimer = null;
@@ -458,31 +512,43 @@ function showToast(text){
   }, 1300);
 }
 
-/*
-  Cuando el usuario toca el iframe de Drive, normalmente la ventana pierde foco.
-  Entonces esperamos unos segundos y ponemos un escudo transparente encima.
-  Eso ayuda a que los controles de Drive se escondan y no vuelvan a salir por toques accidentales.
-*/
-function activateShieldSoon(){
+function cleanVideo(){
+  hidePopup();
+  hidePlayHint();
+  videoBox.classList.add('cleanMode');
+  cleanShield.classList.add('active');
+}
+
+function scheduleClean(){
   hidePopup();
   hidePlayHint();
 
-  if(shieldTimer){
-    clearTimeout(shieldTimer);
+  if(cleanTimer){
+    clearTimeout(cleanTimer);
   }
 
-  shieldTimer = setTimeout(function(){
-    cleanShield.classList.add('active');
-  }, 2800);
+  /*
+    Le damos unos segundos a Drive para que arranque y luego recortamos controles.
+  */
+  cleanTimer = setTimeout(function(){
+    cleanVideo();
+  }, 2600);
 }
 
+/*
+  Cuando el usuario toca el iframe de Drive, normalmente la página pierde foco.
+  Eso lo usamos como señal de que ya tocó reproducir.
+*/
 window.addEventListener('blur', function(){
-  activateShieldSoon();
+  scheduleClean();
 });
 
-document.addEventListener('visibilitychange', function(){
-  if(!document.hidden){
-    hidePopup();
+window.addEventListener('focus', function(){
+  /*
+    En algunos móviles el foco vuelve rápido. Igual limpiamos.
+  */
+  if(cleanTimer){
+    return;
   }
 });
 
@@ -499,11 +565,21 @@ cleanShield.addEventListener('click', function(){
 
   if(shieldTapCount >= 2){
     shieldTapCount = 0;
+
+    /*
+      Doble toque: permite controles por 4 segundos.
+      Luego vuelve a recortar automáticamente.
+    */
+    videoBox.classList.remove('cleanMode');
     cleanShield.classList.remove('active');
     showToast('Controles activados por 4 segundos');
 
-    setTimeout(function(){
-      cleanShield.classList.add('active');
+    if(recleanTimer){
+      clearTimeout(recleanTimer);
+    }
+
+    recleanTimer = setTimeout(function(){
+      cleanVideo();
     }, 4000);
   }else{
     showToast('Pantalla limpia. Doble toque para controles.');
